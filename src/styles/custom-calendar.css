@@ -1,0 +1,23 @@
+.rbc-calendar {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .rbc-toolbar {
+    margin-bottom: 1rem;
+  }
+  
+  .rbc-toolbar button {
+    @apply bg-gray-200 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-300;
+  }
+  
+  .rbc-toolbar button.rbc-active {
+    @apply bg-blue-600 text-white;
+  }
+  
+  .rbc-time-view .rbc-time-header {
+    border-bottom: 1px solid #e5e7eb; /* Tailwind border-gray-200 */
+  }
+  
+  .rbc-time-content > * + * > * {
+    border-top: 1px solid #e5e7eb; /* Tailwind border-gray-200 */
+  }  
