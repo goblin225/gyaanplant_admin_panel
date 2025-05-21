@@ -75,9 +75,9 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
-        <p className="text-muted-foreground">
+        {/* <p className="text-muted-foreground">
           Here's an overview of your event and meeting room bookings
-        </p>
+        </p> */}
       </div>
 
       <Stats />

@@ -1,36 +1,17 @@
+// Sidebar.jsx
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  Box,
-  ChevronLeft,
-  ChevronRight,
-  Building,
-  LayoutDashboard, Calendar,
-  Package,
-  Settings,
-  ShoppingBag,
-  Truck,
-  Users,
-  FileText,
-  Bell,
-  Tags,
-  Warehouse as WarehouseIcon,
-  FileQuestion,
-  CircleUserRound,
-  Store,
-  BookOpen,
-  Bookmark,
-  Calculator,
-  ListChecks,
-  CalendarClock,
-  FileSpreadsheet,
-  LockKeyhole,
+  ChevronLeft, ChevronRight, LayoutDashboard, Users, BookOpen,
+  Tags, FileQuestion, Settings, Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import logo from "@/assets/gyaan_logo.png";
+import { useQuery } from "@tanstack/react-query";
+import { getUserById } from "../../services/user";
 
 const NavItem = ({ to, icon: Icon, label, isCollapsed }) => {
   const location = useLocation();
@@ -64,31 +45,36 @@ const NavItem = ({ to, icon: Icon, label, isCollapsed }) => {
   );
 };
 
-const NavGroup = ({ title, children, isCollapsed }) => {
-  return (
-    <div className="space-y-1">
-      {!isCollapsed && (
-        <div className="px-3 py-2">
-          <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
-        </div>
-      )}
-      {children}
-    </div>
-  );
-};
+const NavGroup = ({ title, children, isCollapsed }) => (
+  <div className="space-y-1">
+    {!isCollapsed && (
+      <div className="px-3 py-2">
+        <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
+      </div>
+    )}
+    {children}
+  </div>
+);
 
-const Sidebar = ({ className }) => {
+const Sidebar = ({ className, userId }) => {
+
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { data: userById, error } = useQuery({
+    queryKey: ["userById", userId],
+    queryFn: () => getUserById(userId),
+    enabled: !!userId,
+  });
+
+  console.log("userId", userId);
+  console.log("error", error);
+
+  const role = userById?.role;
+  const routePrefix = role === "Teacher" ? "/Teacher" : "/Admin";
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setIsCollapsed(true);
-      } else {
-        setIsCollapsed(false);
-      }
+      setIsCollapsed(window.innerWidth < 768);
     };
-
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -115,16 +101,10 @@ const Sidebar = ({ className }) => {
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={cn(
             "text-muted-foreground hover:text-foreground transition-all",
-            isCollapsed
-              ? "absolute -right-5 top-4 z-50 flex bg-background border rounded-full shadow-md"
-              : ""
+            isCollapsed ? "absolute -right-5 top-4 z-50 flex bg-background border rounded-full shadow-md" : ""
           )}
         >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
+          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
       </div>
 
@@ -132,30 +112,25 @@ const Sidebar = ({ className }) => {
         className={cn(
           "flex flex-col gap-4 overflow-y-auto py-4",
           isCollapsed && "items-center",
-          "h-[calc(100vh-4rem)]" // Adjust if you have a header/navbar
+          "h-[calc(100vh-4rem)]"
         )}
       >
         <NavGroup title="Overview" isCollapsed={isCollapsed}>
-          <NavItem to="/" icon={LayoutDashboard} label="Dashboard" isCollapsed={isCollapsed} />
+          <NavItem to={`${routePrefix}`} icon={LayoutDashboard} label="Dashboard" isCollapsed={isCollapsed} />
         </NavGroup>
 
         <NavGroup title="Management" isCollapsed={isCollapsed}>
-          {/* <NavItem to="/role" icon={LockKeyhole} label="Role Management" isCollapsed={isCollapsed} /> */}
-          <NavItem to="/users" icon={Users} label="Users & Customers" isCollapsed={isCollapsed} />
-          <NavItem to="/course" icon={BookOpen} label="Courses" isCollapsed={isCollapsed} />
-          <NavItem to="/category" icon={Tags} label="Category" isCollapsed={isCollapsed} />
-          <NavItem to="/questions" icon={FileQuestion} label="Questions" isCollapsed={isCollapsed} />
+          <NavItem to={`${routePrefix}/users`} icon={Users} label="Users & Customers" isCollapsed={isCollapsed} />
+          <NavItem to={`${routePrefix}/course`} icon={BookOpen} label="Courses" isCollapsed={isCollapsed} />
+          <NavItem to={`${routePrefix}/category`} icon={Tags} label="Category" isCollapsed={isCollapsed} />
+          <NavItem to={`${routePrefix}/questions`} icon={FileQuestion} label="Questions" isCollapsed={isCollapsed} />
         </NavGroup>
-
-        {/* <NavGroup title="Other Reports" isCollapsed={isCollapsed}>
-          <NavItem to="/billing" icon={FileText} label="Billing & Reports" isCollapsed={isCollapsed} />
-        </NavGroup> */}
 
         {!isCollapsed && <Separator className="my-2" />}
 
         <NavGroup title="System" isCollapsed={isCollapsed}>
-          <NavItem to="/settings" icon={Settings} label="Settings" isCollapsed={isCollapsed} />
-          <NavItem to="/notifications" icon={Bell} label="Notifications" isCollapsed={isCollapsed} />
+          <NavItem to={`${routePrefix}/settings`} icon={Settings} label="Settings" isCollapsed={isCollapsed} />
+          <NavItem to={`${routePrefix}/notifications`} icon={Bell} label="Notifications" isCollapsed={isCollapsed} />
         </NavGroup>
       </div>
     </aside>

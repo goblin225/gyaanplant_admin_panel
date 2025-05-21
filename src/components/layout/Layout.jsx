@@ -5,12 +5,17 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import PageTransition from "./PageTransition";
 import { cn } from "@/lib/utils";
+import { useAuth } from '../../context/AuthProvider';
 
 const Layout = ({ children }) => {
 
+  const { user } = useAuth();
+  const userId = user?._id;
   const location = useLocation();
   const pageTitle = getPageTitle(location.pathname);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  console.log("userById", userId);
 
   useEffect(() => {
     const handleResize = () => {
@@ -28,7 +33,7 @@ const Layout = ({ children }) => {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <Sidebar userId={userId} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       <div className={cn("flex flex-col flex-1 overflow-hidden", isCollapsed ? "ml-16" : "ml-60")}>
         <Header title={pageTitle} />
         <main className="flex-1 overflow-y-auto p-6 mt-14">
@@ -46,12 +51,18 @@ const Layout = ({ children }) => {
 function getPageTitle(pathname) {
   switch (pathname) {
     case "/":
+    case "/admin":
+    case "/teacher":
       return "Dashboard";
     case "/role":
       return "Role Management";
     case "/users":
+    case "/admin/users":
+    case "/teacher/users":
       return "User Management";
     case "/course":
+    case "/admin/course":
+    case "/teacher/course":
       return "Course Management";
     case "/category":
       return "Category";

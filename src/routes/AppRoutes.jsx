@@ -1,9 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
-// Protected Route
+// Wrappers
 import ProtectedRoute from "../utils/ProtectedRoute";
 import PublicRoute from "../utils/PublicRoute";
+import RoleBasedRedirect from "../utils/RoleBasedRedirect";
 
 // Layout
 import Layout from "@/components/layout/Layout";
@@ -20,30 +21,40 @@ import Category from "../pages/Category";
 import ProfileSettings from "../pages/Profile";
 
 const AppRoutes = () => (
-    <BrowserRouter>
-        <AnimatePresence mode="wait">
-            <Routes>
-                {/* Authentication Routes */}
-                <Route element={<PublicRoute />}>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                </Route>
+  <BrowserRouter>
+    <AnimatePresence mode="wait">
+      <Routes>
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
 
-                {/* Protected Routes */}
-                <Route element={<ProtectedRoute />}>
-                    <Route element={<Layout />}>
-                        <Route path="/" element={<Dashboard />} />
-                        <Route path="/course" element={<Courses />} />
-                        <Route path="/category" element={<Category />} />
-                        <Route path="/users" element={<UserManagement />} />
-                        <Route path="/questions" element={<Questions />} />
-                        <Route path="/settings" element={<ProfileSettings />} />
-                    </Route>
-                </Route>
-                <Route path="*" element={<NotFound />} />
-            </Routes>
-        </AnimatePresence>
-    </BrowserRouter>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<RoleBasedRedirect />} />
+
+          <Route path="/Admin" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="course" element={<Courses />} />
+            <Route path="category" element={<Category />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="questions" element={<Questions />} />
+            <Route path="settings" element={<ProfileSettings />} />
+          </Route>
+
+          <Route path="/Teacher" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="course" element={<Courses />} />
+            <Route path="category" element={<Category />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="questions" element={<Questions />} />
+            <Route path="settings" element={<ProfileSettings />} />
+          </Route>
+        </Route>
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AnimatePresence>
+  </BrowserRouter>
 );
 
 export default AppRoutes;
