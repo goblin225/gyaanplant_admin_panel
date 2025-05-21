@@ -20,6 +20,7 @@ import Questions from "../pages/Questions";
 import Category from "../pages/Category";
 import ProfileSettings from "../pages/Profile";
 import Company from "../pages/Company";
+import LeaderBoard from "../pages/LeaderBoard";
 
 const AppRoutes = () => (
   <BrowserRouter>
@@ -41,6 +42,7 @@ const AppRoutes = () => (
             <Route path="questions" element={<Questions />} />
             <Route path="settings" element={<ProfileSettings />} />
             <Route path="company" element={<Company />} />
+            <Route path="leaderboard" element={<LeaderBoard />} />
           </Route>
 
           <Route path="/Teacher" element={<Layout />}>
@@ -50,6 +52,7 @@ const AppRoutes = () => (
             <Route path="users" element={<UserManagement />} />
             <Route path="questions" element={<Questions />} />
             <Route path="settings" element={<ProfileSettings />} />
+            <Route path="leaderboard" element={<LeaderBoard />} />
           </Route>
         </Route>
 

@@ -4,7 +4,8 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   ChevronLeft, ChevronRight, LayoutDashboard, Users, BookOpen,
   Tags, FileQuestion, Settings, Bell,
-  Building2
+  Building2,
+  Trophy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -123,6 +124,7 @@ const Sidebar = ({ className, userId }) => {
           <NavItem to={`${routePrefix}/course`} icon={BookOpen} label="Courses" isCollapsed={isCollapsed} />
           <NavItem to={`${routePrefix}/category`} icon={Tags} label="Category" isCollapsed={isCollapsed} />
           <NavItem to={`${routePrefix}/questions`} icon={FileQuestion} label="Questions" isCollapsed={isCollapsed} />
+          <NavItem to={`${routePrefix}/leaderboard`} icon={Trophy} label="Leader Board" isCollapsed={isCollapsed} />
         </NavGroup>
 
         {!isCollapsed && <Separator className="my-2" />}
