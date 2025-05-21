@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   ChevronLeft, ChevronRight, LayoutDashboard, Users, BookOpen,
-  Tags, FileQuestion, Settings, Bell
+  Tags, FileQuestion, Settings, Bell,
+  Building2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getUserById } from "../../services/user";
 
 const NavItem = ({ to, icon: Icon, label, isCollapsed }) => {
+
   const location = useLocation();
   const isActive = location.pathname === to;
 
@@ -64,9 +66,6 @@ const Sidebar = ({ className, userId }) => {
     queryFn: () => getUserById(userId),
     enabled: !!userId,
   });
-
-  console.log("userId", userId);
-  console.log("error", error);
 
   const role = userById?.role;
   const routePrefix = role === "Teacher" ? "/Teacher" : "/Admin";
@@ -120,7 +119,7 @@ const Sidebar = ({ className, userId }) => {
         </NavGroup>
 
         <NavGroup title="Management" isCollapsed={isCollapsed}>
-          <NavItem to={`${routePrefix}/users`} icon={Users} label="Users & Customers" isCollapsed={isCollapsed} />
+          <NavItem to={`${routePrefix}/users`} icon={Users} label="Users" isCollapsed={isCollapsed} />
           <NavItem to={`${routePrefix}/course`} icon={BookOpen} label="Courses" isCollapsed={isCollapsed} />
           <NavItem to={`${routePrefix}/category`} icon={Tags} label="Category" isCollapsed={isCollapsed} />
           <NavItem to={`${routePrefix}/questions`} icon={FileQuestion} label="Questions" isCollapsed={isCollapsed} />
@@ -130,6 +129,7 @@ const Sidebar = ({ className, userId }) => {
 
         <NavGroup title="System" isCollapsed={isCollapsed}>
           <NavItem to={`${routePrefix}/settings`} icon={Settings} label="Settings" isCollapsed={isCollapsed} />
+          <NavItem to={`${routePrefix}/company`} icon={Building2} label="Company" isCollapsed={isCollapsed} />
           <NavItem to={`${routePrefix}/notifications`} icon={Bell} label="Notifications" isCollapsed={isCollapsed} />
         </NavGroup>
       </div>

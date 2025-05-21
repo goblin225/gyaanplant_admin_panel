@@ -19,6 +19,7 @@ import Courses from "../pages/Courses";
 import Questions from "../pages/Questions";
 import Category from "../pages/Category";
 import ProfileSettings from "../pages/Profile";
+import Company from "../pages/Company";
 
 const AppRoutes = () => (
   <BrowserRouter>
@@ -39,6 +40,7 @@ const AppRoutes = () => (
             <Route path="users" element={<UserManagement />} />
             <Route path="questions" element={<Questions />} />
             <Route path="settings" element={<ProfileSettings />} />
+            <Route path="company" element={<Company />} />
           </Route>
 
           <Route path="/Teacher" element={<Layout />}>

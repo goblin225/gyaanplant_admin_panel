@@ -1,7 +1,7 @@
 import api from './api';
 
-export const createCategory = async (roomData) => {
-    return await api.post('/category/create-category', roomData);
+export const createCategory = async (categoryData) => {
+    return await api.post('/category/create-category', categoryData);
 };
 
 export const getAllCategory = async () => {

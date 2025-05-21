@@ -15,8 +15,6 @@ const Layout = ({ children }) => {
   const pageTitle = getPageTitle(location.pathname);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  console.log("userById", userId);
-
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
