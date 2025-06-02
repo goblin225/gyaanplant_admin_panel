@@ -5,25 +5,34 @@ import { getUserById } from "../services/user";
 import { useAuth } from "../context/AuthProvider";
 
 const RoleBasedRedirect = () => {
+  const { user } = useAuth();
+  const userId = user?._id;
+  const navigate = useNavigate();
 
-    const { user } = useAuth();
-    const userId = user?._id;
-    const navigate = useNavigate();
+  const { data: userById, isLoading, error } = useQuery({
+    queryKey: ["userById", userId],
+    queryFn: () => getUserById(userId),
+    enabled: !!userId,
+  });
 
-    const { data: userById, isLoading, error } = useQuery({
-        queryKey: ["userById", userId],
-        queryFn: () => getUserById(userId),
-        enabled: !!userId,
-    });
+  useEffect(() => {
+    if (!isLoading && userById?.data?.roleId?.name) {
+      const role = userById.data.roleId?.name;
 
-    useEffect(() => {
-        if (!isLoading && userById?.data?.role) {
-            const rolePath = userById?.data?.role === "Teacher" ? "/Teacher" : "/Admin";
-            navigate(rolePath, { replace: true });
-        }
-    }, [userById, isLoading, navigate]);
+      const rolePath =
+        role === "Teacher"
+          ? "/teacher"
+          : role === "College"
+            ? "/college"
+            : role === "Company"
+              ? "/company"
+              : "/admin";
 
-    return null;
+      navigate(rolePath, { replace: true });
+    }
+  }, [userById, isLoading, navigate]);
+
+  return null;
 };
 
 export default RoleBasedRedirect;

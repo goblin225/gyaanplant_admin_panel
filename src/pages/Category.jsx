@@ -22,6 +22,7 @@ import { getAllCategory, createCategory, deleteCategory } from '../services/cate
 import { uploadImage } from '../services/upload';
 
 const Category = () => {
+  
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

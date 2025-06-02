@@ -8,8 +8,8 @@ export const sendOTP = async (credentials) => {
   return response.data;
 };
 
-export const verifyOTP = async (credentials) => {
-  const response = await api.post('/auth/verify-otp', credentials);
+export const adminLogin = async (credentials) => {
+  const response = await api.post('/auth/admin-login', credentials);
   const data = response.data.data;
 
   return {
@@ -17,7 +17,8 @@ export const verifyOTP = async (credentials) => {
     refreshToken: data.refreshToken,
     userData: {
       _id: data._id,
-      phoneNumber: data.phoneNumber
+      phoneNumber: data.phoneNumber,
+      role: data.roleName
     }
   };
 };

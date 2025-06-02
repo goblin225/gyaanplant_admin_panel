@@ -1,13 +1,17 @@
+import { useMemo } from 'react';
 import Stats from "@/components/dashboard/Stats";
 import TopRankUsers from "@/components/dashboard/TopRankUsers";
 import Card from "@/components/common/Card";
 import { Button } from "@/components/ui/button";
+import { useQuery } from '@tanstack/react-query';
 import StatusBadge from '@/components/common/StatusBadge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ExternalLink, RefreshCw, MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { getAllAttendance } from "../services/attendance";
+import { format } from 'date-fns';
 
 const topCourses = [
   {
@@ -60,32 +64,53 @@ const getStatusVariant = (status) => {
 };
 
 // Mock data for charts
-const salesData = [
-  { name: "Jan", total: 4000 },
-  { name: "Feb", total: 3000 },
-  { name: "Mar", total: 5000 },
-  { name: "Apr", total: 4500 },
-  { name: "May", total: 6000 },
-  { name: "Jun", total: 5500 },
-  { name: "Jul", total: 7000 },
-];
+// const salesData = [
+//   { name: "Jan", total: 4000 },
+//   { name: "Feb", total: 3000 },
+//   { name: "Mar", total: 5000 },
+//   { name: "Apr", total: 4500 },
+//   { name: "May", total: 6000 },
+//   { name: "Jun", total: 5500 },
+//   { name: "Jul", total: 7000 },
+// ];
 
 const Dashboard = () => {
+
+  const { data: attendanceResponse } = useQuery({
+    queryKey: ['attendance'],
+    queryFn: getAllAttendance,
+  });
+
+  const attendances = useMemo(() => attendanceResponse?.data || [], [attendanceResponse]);
+
+  const attendanceData = useMemo(() => {
+    if (!attendances.length) return [];
+
+    const grouped = attendances?.reduce((acc, curr) => {
+      const dateKey = format(new Date(curr.date), 'MMM dd');
+      if (!acc[dateKey]) acc[dateKey] = 0;
+      acc[dateKey]++;
+      return acc;
+    }, {});
+
+    return Object.entries(grouped).map(([date, count]) => ({
+      name: date,
+      total: count,
+    }));
+  }, [attendances]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
-        {/* <p className="text-muted-foreground">
-          Here's an overview of your event and meeting room bookings
-        </p> */}
       </div>
 
       <Stats />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         <Card
-          title="Monthly Revenue"
-          description="Overview of course sales and revenue"
+           title="Attendance Overview"
+          description="Number of users marked present each day"
           className="lg:col-span-2 xl:col-span-1"
         >
           <Tabs defaultValue="bar">
@@ -104,7 +129,7 @@ const Dashboard = () => {
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={salesData}
+                    data={attendanceData}
                     margin={{ top: 0, right: 20, left: 20, bottom: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.4} />
@@ -119,10 +144,10 @@ const Dashboard = () => {
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tickFormatter={(value) => `₹${value}`}
+                      tickFormatter={(value) => `${value} users`}
                     />
                     <Tooltip
-                      formatter={(value) => [`₹${value}`, "Revenue"]}
+                      formatter={(value) => [`${value} users`, "Attendance"]}
                       contentStyle={{
                         backgroundColor: "#fff",
                         borderColor: "#e2e8f0",
@@ -139,7 +164,7 @@ const Dashboard = () => {
             <TabsContent value="line" className="mt-0">
               <div className="h-80 bg-white border border-gray-200 rounded-xl shadow-sm p-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={salesData} margin={{ top: 0, right: 20, left: 20, bottom: 0 }}>
+                  <LineChart data={attendanceData} margin={{ top: 0, right: 20, left: 20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.4} />
                     <XAxis
                       dataKey="name"
@@ -152,10 +177,10 @@ const Dashboard = () => {
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tickFormatter={(value) => `₹${value}`}
+                      tickFormatter={(value) => `${value} users`}
                     />
                     <Tooltip
-                      formatter={(value) => [`₹${value}`, "Revenue"]}
+                      formatter={(value) => [`${value} users`, "Attendance"]}
                       contentStyle={{
                         backgroundColor: "#fff",
                         borderColor: "#e2e8f0",

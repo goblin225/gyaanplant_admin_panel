@@ -1,14 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { verifyOTP } from '../services/auth';
+import { adminLogin } from '../services/auth';
 import { useAuth } from '../context/AuthProvider';
 import Cookies from 'js-cookie';
 
 export const useLoginStore = () => {
+  
   const queryClient = useQueryClient();
-  const { userVerifyOTP } = useAuth();
+  const { adminUserLogin } = useAuth();
 
   return useMutation({
-    mutationFn: verifyOTP,
+    mutationFn: adminLogin,
     onSuccess: (data) => {
       const accessToken = data.accessToken;
       const refreshToken = data.refreshToken;
@@ -24,7 +25,7 @@ export const useLoginStore = () => {
       sessionStorage.setItem('accessToken', accessToken);
       sessionStorage.setItem('userData', JSON.stringify(userData));
 
-      userVerifyOTP(userData);
+      adminUserLogin(userData);
 
       queryClient.invalidateQueries();
     },

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Barcode, Edit, Eye, Trash } from 'lucide-react';
+import { University, Edit, Eye, Trash } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DataTable from '@/components/common/DataTable';
 import { Button } from '@/components/ui/button';
@@ -15,22 +15,18 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Link } from 'react-router-dom';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
-import { Badge } from '@/components/ui/badge';
-import { getAllUsers, addUser, updateUser, getRoles, deleteUser } from '../services/user';
-import { uploadImage } from '../services/upload';
+import { getAllUsers, updateUser, deleteUser } from '../services/user';
+import { registerCollege } from '../services/college';
 
-const UserManagement = () => {
+const College = () => {
 
     const { toast } = useToast();
     const queryClient = useQueryClient();
     const [isAdding, setIsAdding] = useState(false);
-    const [imageFiles, setImageFiles] = useState([]);
     const [isViewing, setIsViewing] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedData, setSelectedData] = useState(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [editing, setEditing] = useState(null);
@@ -41,58 +37,51 @@ const UserManagement = () => {
         queryFn: getAllUsers,
     });
 
-    const { data: roleResponce = { data: [] } } = useQuery({
-        queryKey: ['role'],
-        queryFn: getRoles,
-    });
-
-    const user = userResponce?.data || [];
+    const user = (userResponce?.data || []).filter(
+        (u) => u?.roleId?.name === 'College'
+    );
 
     const form = useForm({
         defaultValues: {
-            name: '',
-            email: '',
-            role: '',
-            phoneNumber: '',
-            password: '',
-            profile_pic: '',
+            collegeName: '',
+            mailId: '',
+            contactNumber: '',
+            address: '',
+            contactPersonName: '',
+            contactPersonPhone: '',
+            contactPersonPassword: '',
         },
     });
 
     const handleViewClick = (user) => {
-        setSelectedUser(user);
+        setSelectedData(user);
         setIsViewing(true);
     };
 
     const handleAddUser = async (data) => {
         setLoading(true);
         try {
-            let profilePicUrl = editing?.profile_pic || '';
-
-            if (data.profilePic && data.profilePic instanceof File) {
-                profilePicUrl = await uploadImage(data.profilePic);
-            }
             const payload = {
-                name: data.name,
-                email: data.email,
-                role: data.role,
-                phoneNumber: data.phoneNumber,
-                password: data.password,
-                profile_pic: profilePicUrl,
+                collegeName: data.collegeName,
+                mailId: data.mailId,
+                contactNumber: data.contactNumber,
+                address: data.address,
+                contactPersonName: data.contactPersonName,
+                contactPersonPhone: data.contactPersonPhone,
+                contactPersonPassword: data.contactPersonPassword,
             };
 
             const response = editing
                 ? await updateUser(editing._id, payload)
-                : await addUser(payload);
+                : await registerCollege(payload);
             if (response?.statusCode === 200) {
                 toast({
-                    title: editing ? 'User Updated' : 'User Added',
-                    description: `${data.name} ${editing ? 'updated' : 'added'} successfully.`,
+                    title: editing ? 'College Updated' : 'College Added',
+                    description: `${data?.collegeName} ${editing ? 'updated' : 'added'} successfully.`,
                 });
                 setIsAdding(false);
                 setEditing(null);
                 form.reset();
-                setImageFiles([]);
                 queryClient.invalidateQueries({ queryKey: ['user'] });
             }
         } catch (error) {
@@ -134,21 +123,24 @@ const UserManagement = () => {
         {
             header: 'Profile',
             accessor: 'profilePic',
-            cell: (row) => (
-                <img
-                    src={row?.profile_pic || '/default-avatar.png'}
-                    alt="Profile"
-                    className="h-8 w-8 rounded-full object-cover"
-                />
-            ),
+            cell: (row) =>
+                row?.roleId?.name === 'College' ? (
+                    <University className="h-8 w-8" />
+                ) : (
+                    <img
+                        src={row?.profile_pic}
+                        alt="Profile"
+                        className="h-8 w-8 rounded-full object-cover"
+                    />
+                ),
         },
-        { header: 'Name', accessor: (row) => row.name || 'Guest User' },
-        { header: 'Email', accessor: (row) => row?.email || 'guest@gmail.com' },
+        { header: 'Name', accessor: (row) => row.name || '--' },
+        { header: 'Email', accessor: (row) => row?.email || '--' },
         { header: 'Phone Number', accessor: 'phoneNumber' },
         {
             header: 'Role',
             accessor: 'role',
-            cell: (row) => <span className="text-blue-600 font-bold">{row?.roleId?.name || "No Role"}</span>,
+            cell: (row) => <span className="text-blue-600">{row?.roleId?.name || "No Role"}</span>,
         },
         {
             header: 'Status',
@@ -174,11 +166,11 @@ const UserManagement = () => {
                             setEditing(row);
                             setIsAdding(true);
                             form.reset({
-                                name: row.name,
+                                collegeName: row.collegeName,
                                 email: row.email,
                                 role: row.role,
                                 phoneNumber: row.phoneNumber,
-                                password: '',
+                                contactPersonPassword: '',
                                 profilePic: '',
                             });
                         }}
@@ -196,8 +188,8 @@ const UserManagement = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">User Management</h1>
-                <Button onClick={() => setIsAdding(true)} className="bg-green-600 hover:bg-green-800">Add User</Button>
+                <h1 className="text-2xl font-bold">College Management</h1>
+                <Button onClick={() => setIsAdding(true)} className="bg-green-600 hover:bg-green-800">Add College</Button>
             </div>
 
             <Card className="p-4">
@@ -210,21 +202,24 @@ const UserManagement = () => {
                 />
             </Card>
 
-            {/* Add user & edit Dialog */}
+            {/* Add college & edit Dialog */}
             <Dialog open={isAdding} onOpenChange={setIsAdding}>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Add New User</DialogTitle>
+                        <DialogTitle>Add College</DialogTitle>
                     </DialogHeader>
 
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(handleAddUser)} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {[
-                                    { name: 'name', label: 'Name' },
-                                    { name: 'email', label: 'Email' },
-                                    { name: 'phoneNumber', label: 'Phone Number' },
-                                    { name: 'password', label: 'Password' },
+                                    { name: 'collegeName', label: 'College Name' },
+                                    { name: 'mailId', label: 'Email' },
+                                    { name: 'contactNumber', label: 'Contact Number' },
+                                    { name: 'contactPersonName', label: 'Contact Person Name' },
+                                    { name: 'contactPersonPhone', label: 'Contact Person Number' },
+                                    { name: 'address', label: 'Address' },
+                                    { name: 'contactPersonPassword', label: 'Password' },
                                 ].map(({ name, label }) => (
                                     <FormField
                                         key={name}
@@ -242,27 +237,7 @@ const UserManagement = () => {
                                     />
                                 ))}
 
-                                <FormField
-                                    control={form.control}
-                                    name="profilePic"
-                                    render={() => (
-                                        <FormItem>
-                                            <FormLabel>Profile Picture</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={(e) => {
-                                                        form.setValue('profilePic', e.target.files[0]);
-                                                    }}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
+                                {/* <FormField
                                     control={form.control}
                                     name="role"
                                     render={({ field }) => (
@@ -283,7 +258,8 @@ const UserManagement = () => {
                                             <FormMessage />
                                         </FormItem>
                                     )}
-                                />
+                                /> */}
+
                             </div>
 
                             <DialogFooter>
@@ -325,7 +301,7 @@ const UserManagement = () => {
                                             ></path>
                                         </svg>
                                     )}
-                                    {editing ? 'Update User' : 'Add User'}
+                                    {editing ? 'Update College' : 'Add College'}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -339,7 +315,7 @@ const UserManagement = () => {
                     <DialogHeader>
                         <DialogTitle>Confirm Deletion</DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to delete this user? This action cannot be undone.
+                            Are you sure you want to delete this College? This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
@@ -353,57 +329,50 @@ const UserManagement = () => {
                 </DialogContent>
             </Dialog>
 
-            {/* View user Dialog */}
+            {/* View College Dialog */}
             <Dialog open={isViewing} onOpenChange={setIsViewing}>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>User Details</DialogTitle>
+                        <DialogTitle>College Details</DialogTitle>
                         <DialogDescription>
-                            Detailed information about {selectedUser?.name}
+                            Detailed information about {selectedData?.name}
                         </DialogDescription>
                     </DialogHeader>
 
-                    {selectedUser && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                                <div>
-                                    <Label>Name</Label>
-                                    <p className="font-medium">{selectedUser?.name}</p>
+                    {selectedData && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {[
+                                { label: 'College Name', value: selectedData?.name },
+                                { label: 'Email', value: selectedData?.email },
+                                { label: 'Phone Number', value: selectedData?.phoneNumber },
+                                { label: 'Role', value: selectedData?.roleId?.name },
+                                { label: 'Email', value: selectedData?.collegeId?.mailId },
+                                { label: 'Contact Number', value: selectedData?.collegeId?.contactNumber },
+                                { label: 'Address', value: selectedData?.collegeId?.address },
+                                {
+                                    label: 'Status',
+                                    value: selectedData.isActive ? 'Active' : 'Inactive',
+                                    className: selectedData.isActive ? 'text-green-600' : 'text-red-500',
+                                },
+                            ].map(({ label, value, className = '' }) => (
+                                <div key={label}>
+                                    <Label className='font-bold'>{label}</Label>
+                                    <p className={`${className}`}>{value || '-'}</p>
                                 </div>
-                                <div>
-                                    <Label>Email</Label>
-                                    <p className="font-medium">{selectedUser?.email}</p>
-                                </div>
-                                <div>
-                                    <Label>Phone Number</Label>
-                                    <p className="font-medium">{selectedUser?.phoneNumber}</p>
-                                </div>
-                                <div>
-                                    <Label>Role</Label>
-                                    <Badge variant="default" className="capitalize ml-3">{selectedUser.roleId?.name}</Badge>
-                                </div>
-                                <div>
-                                    <Label>Status</Label>
-                                    <p className={`font-semibold ${selectedUser.isActive ? 'text-green-600' : 'text-red-500'}`}>
-                                        {selectedUser.isActive ? 'Active' : 'Inactive'}
-                                    </p>
-                                </div>
-                            </div>
+                            ))}
 
-                            <div className="space-y-4">
-                                {selectedUser.profilePic && (
-                                    <div className="md:col-span-2">
-                                        <Label>Profile Picture</Label>
-                                        <div className="mt-2">
-                                            <img
-                                                src={selectedUser.profile_Pic}
-                                                alt={selectedUser.name}
-                                                className="h-40 w-40 object-cover rounded-full border"
-                                            />
-                                        </div>
+                            {selectedData?.profile_pic && (
+                                <div className="md:col-span-3">
+                                    <Label>Profile Picture</Label>
+                                    <div className="mt-2">
+                                        <img
+                                            src={selectedData.profile_pic}
+                                            alt={selectedData.name}
+                                            className="h-40 w-40 object-cover rounded-full border"
+                                        />
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -416,4 +385,4 @@ const UserManagement = () => {
     );
 };
 
-export default UserManagement;
+export default College;

@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const userVerifyOTP = (userData) => {
+  const adminUserLogin = (userData) => {
     setUser(userData);
   };
 
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, userVerifyOTP, logout, isAuthenticated: !!user, loading }}>
+    <AuthContext.Provider value={{ user, adminUserLogin, logout, isAuthenticated: !!user, loading }}>
       {children}
     </AuthContext.Provider>
   );

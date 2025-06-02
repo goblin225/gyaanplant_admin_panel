@@ -1,11 +1,10 @@
-// Sidebar.jsx
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   ChevronLeft, ChevronRight, LayoutDashboard, Users, BookOpen,
-  Tags, FileQuestion, Settings, Bell,
-  Building2,
-  Trophy
+  Tags, FileQuestion, Settings, Bell, Briefcase,
+  Building2, ClipboardList, ListChecks,
+  Trophy, University
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,8 +14,24 @@ import logo from "@/assets/gyaan_logo.png";
 import { useQuery } from "@tanstack/react-query";
 import { getUserById } from "../../services/user";
 
-const NavItem = ({ to, icon: Icon, label, isCollapsed }) => {
+const roleMenuMap = {
+  Admin: [
+    "Dashboard", "Users", "Courses", "Category", "Questions",
+    "Leader Board", "Tasks", "Attendance", "College",
+    "Settings", "Company", "Notifications", "Job"
+  ],
+  Teacher: [
+    "Dashboard", "Courses", "Questions", "Tasks", "Attendance", "Settings",
+  ],
+  College: [
+    "Dashboard", "Users", "Courses", "Leader Board", "Settings"
+  ],
+  Company: [
+    "Dashboard", "Users", "Job", "Settings", "Job Application"
+  ]
+};
 
+const NavItem = ({ to, icon: Icon, label, isCollapsed }) => {
   const location = useLocation();
   const isActive = location.pathname === to;
 
@@ -60,16 +75,21 @@ const NavGroup = ({ title, children, isCollapsed }) => (
 );
 
 const Sidebar = ({ className, userId }) => {
-
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const { data: userById, error } = useQuery({
+
+  const { data: userById } = useQuery({
     queryKey: ["userById", userId],
     queryFn: () => getUserById(userId),
-    enabled: !!userId,
+    enabled: !!userId
   });
 
-  const role = userById?.role;
-  const routePrefix = role === "Teacher" ? "/Teacher" : "/Admin";
+  const role = userById?.data?.roleId?.name;
+  const routePrefix =
+    role === "Admin" ? "/admin" :
+      role === "Teacher" ? "/teacher" :
+        role === "Company" ? "/company" :
+          "/college";
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -108,32 +128,63 @@ const Sidebar = ({ className, userId }) => {
         </Button>
       </div>
 
-      <div
-        className={cn(
-          "flex flex-col gap-4 overflow-y-auto py-4",
-          isCollapsed && "items-center",
-          "h-[calc(100vh-4rem)]"
+      <div className={cn("flex flex-col gap-4 overflow-y-auto py-4", isCollapsed && "items-center", "h-[calc(100vh-4rem)]")}>
+        {role && (
+          <>
+            <NavGroup title="Overview" isCollapsed={isCollapsed}>
+              {roleMenuMap[role]?.includes("Dashboard") && (
+                <NavItem to={`${routePrefix}`} icon={LayoutDashboard} label="Dashboard" isCollapsed={isCollapsed} />
+              )}
+            </NavGroup>
+
+            <NavGroup title="Management" isCollapsed={isCollapsed}>
+              {roleMenuMap[role]?.includes("Users") && (
+                <NavItem to={`${routePrefix}/users`} icon={Users} label="Users" isCollapsed={isCollapsed} />
+              )}
+              {roleMenuMap[role]?.includes("Courses") && (
+                <NavItem to={`${routePrefix}/course`} icon={BookOpen} label="Courses" isCollapsed={isCollapsed} />
+              )}
+              {roleMenuMap[role]?.includes("Category") && (
+                <NavItem to={`${routePrefix}/category`} icon={Tags} label="Category" isCollapsed={isCollapsed} />
+              )}
+              {roleMenuMap[role]?.includes("Questions") && (
+                <NavItem to={`${routePrefix}/questions`} icon={FileQuestion} label="Questions" isCollapsed={isCollapsed} />
+              )}
+              {roleMenuMap[role]?.includes("Leader Board") && (
+                <NavItem to={`${routePrefix}/leaderboard`} icon={Trophy} label="Leader Board" isCollapsed={isCollapsed} />
+              )}
+              {roleMenuMap[role]?.includes("Tasks") && (
+                <NavItem to={`${routePrefix}/task`} icon={ClipboardList} label="Tasks" isCollapsed={isCollapsed} />
+              )}
+              {roleMenuMap[role]?.includes("Attendance") && (
+                <NavItem to={`${routePrefix}/attendance`} icon={ListChecks} label="Attendance" isCollapsed={isCollapsed} />
+              )}
+              {roleMenuMap[role]?.includes("College") && (
+                <NavItem to={`${routePrefix}/college`} icon={University} label="College" isCollapsed={isCollapsed} />
+              )}
+              {roleMenuMap[role]?.includes("Job") && (
+                <NavItem to={`${routePrefix}/job`} icon={Briefcase} label="Job" isCollapsed={isCollapsed} />
+              )}
+              {roleMenuMap[role]?.includes("Job Application") && (
+                <NavItem to={`${routePrefix}/jobapplication`} icon={ClipboardList} label="Job Application" isCollapsed={isCollapsed} />
+              )}
+            </NavGroup>
+
+            {!isCollapsed && <Separator className="my-2" />}
+
+            <NavGroup title="System" isCollapsed={isCollapsed}>
+              {roleMenuMap[role]?.includes("Settings") && (
+                <NavItem to={`${routePrefix}/settings`} icon={Settings} label="Settings" isCollapsed={isCollapsed} />
+              )}
+              {roleMenuMap[role]?.includes("Company") && (
+                <NavItem to={`${routePrefix}/company`} icon={Building2} label="Company" isCollapsed={isCollapsed} />
+              )}
+              {roleMenuMap[role]?.includes("Notifications") && (
+                <NavItem to={`${routePrefix}/notifications`} icon={Bell} label="Notifications" isCollapsed={isCollapsed} />
+              )}
+            </NavGroup>
+          </>
         )}
-      >
-        <NavGroup title="Overview" isCollapsed={isCollapsed}>
-          <NavItem to={`${routePrefix}`} icon={LayoutDashboard} label="Dashboard" isCollapsed={isCollapsed} />
-        </NavGroup>
-
-        <NavGroup title="Management" isCollapsed={isCollapsed}>
-          <NavItem to={`${routePrefix}/users`} icon={Users} label="Users" isCollapsed={isCollapsed} />
-          <NavItem to={`${routePrefix}/course`} icon={BookOpen} label="Courses" isCollapsed={isCollapsed} />
-          <NavItem to={`${routePrefix}/category`} icon={Tags} label="Category" isCollapsed={isCollapsed} />
-          <NavItem to={`${routePrefix}/questions`} icon={FileQuestion} label="Questions" isCollapsed={isCollapsed} />
-          <NavItem to={`${routePrefix}/leaderboard`} icon={Trophy} label="Leader Board" isCollapsed={isCollapsed} />
-        </NavGroup>
-
-        {!isCollapsed && <Separator className="my-2" />}
-
-        <NavGroup title="System" isCollapsed={isCollapsed}>
-          <NavItem to={`${routePrefix}/settings`} icon={Settings} label="Settings" isCollapsed={isCollapsed} />
-          <NavItem to={`${routePrefix}/company`} icon={Building2} label="Company" isCollapsed={isCollapsed} />
-          <NavItem to={`${routePrefix}/notifications`} icon={Bell} label="Notifications" isCollapsed={isCollapsed} />
-        </NavGroup>
       </div>
     </aside>
   );

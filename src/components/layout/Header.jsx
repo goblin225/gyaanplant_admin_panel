@@ -92,7 +92,7 @@ const Header = ({ title = "Dashboard" }) => {
               <Button variant="ghost" className="relative h-9 w-9 rounded-full" size="icon">
                 <Avatar className="h-9 w-9">
                   <AvatarImage src={userById?.data?.profile_pic} alt="Avatar" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarFallback>{userById?.data?.name}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -133,3 +133,5 @@ const Header = ({ title = "Dashboard" }) => {
 };
 
 export default Header;
+
+<Header title='Coure'/>

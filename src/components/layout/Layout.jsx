@@ -62,6 +62,8 @@ function getPageTitle(pathname) {
     case "/admin/course":
     case "/teacher/course":
       return "Course Management";
+    case "/Admin/task":
+      return "Task Management";
     case "/category":
       return "Category";
     case "/questions":
