@@ -1,7 +1,7 @@
 import api from './api';
 
-export const createCourse = async (roomData) => {
-    return await api.post('/course/create-course', roomData);
+export const createQuestion = async (questionData) => {
+    return await api.post('/assessment/create-question', questionData);
 };
 
 export const getAllQuestions = async () => {

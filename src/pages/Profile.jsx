@@ -97,6 +97,7 @@ const ProfileSettings = () => {
             console.log("Payload:", payload);
 
             const updated = await updateProfile(userId, payload);
+            queryClient.invalidateQueries({ queryKey: ['user'] });
             toast({
                 title: 'Profile updated',
                 description: 'Profile updated successfully',

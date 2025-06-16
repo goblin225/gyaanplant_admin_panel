@@ -3,16 +3,24 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Eye, Trash, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DataTable from '@/components/common/DataTable';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle,
+    DialogFooter, DialogDescription
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import {  getAllQuestions } from '../services/assessment';
+import { createQuestion, getAllQuestions } from '../services/assessment';
+import AssessmentForm from '../components/common/AssessmentForm';
 
 const AssessmentManager = () => {
-    const [selectedAssessment, setSelectedAssessment] = useState(null);
-    const [viewAssessmentOpen, setViewAssessmentOpen] = useState(false);
-    const queryClient = useQueryClient();
 
-    const { data: assessmentResponse = { data: [] }, isLoading: isLoadingAssessments } = useQuery({
+    const { toast } = useToast();
+    const queryClient = useQueryClient();
+    const [selectedAssessment, setSelectedAssessment] = useState(null);
+    const [viewDialogOpen, setViewDialogOpen] = useState(false);
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+
+    const { data: assessmentResponse = { data: [] }, isLoading } = useQuery({
         queryKey: ['assessments'],
         queryFn: getAllQuestions,
     });
@@ -21,27 +29,21 @@ const AssessmentManager = () => {
 
     const handleViewAssessment = (assessment) => {
         setSelectedAssessment(assessment);
-        setViewAssessmentOpen(true);
+        setViewDialogOpen(true);
     };
 
     const handleDeleteAssessment = (id) => {
-        // add delete logic here
         console.log('Delete assessment:', id);
+        // Add delete logic
     };
 
     const columns = [
-        {
-            header: 'Assessment Title',
-            accessor: 'title',
-        },
-        {
-            header: 'Total Marks',
-            accessor: 'totalMarks',
-        },
+        { header: 'Assessment Title', accessor: 'title' },
+        { header: 'Total Marks', accessor: 'totalMarks' },
         {
             header: 'Pass %',
             accessor: 'passPercentage',
-            cell: (row) => `${row?.passPercentage || 0}%`
+            cell: (row) => `${row.passPercentage || 0}%`
         },
         {
             header: 'Questions',
@@ -55,19 +57,13 @@ const AssessmentManager = () => {
                 <div className="flex gap-2 justify-center">
                     <Tooltip>
                         <TooltipTrigger>
-                            <Eye
-                                onClick={() => handleViewAssessment(row)}
-                                className="h-4 w-4 text-blue-600 cursor-pointer"
-                            />
+                            <Eye onClick={() => handleViewAssessment(row)} className="h-4 w-4 text-blue-600 cursor-pointer" />
                         </TooltipTrigger>
                         <TooltipContent>View</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger>
-                            <Trash
-                                onClick={() => handleDeleteAssessment(row._id)}
-                                className="h-4 w-4 text-red-600 cursor-pointer"
-                            />
+                            <Trash onClick={() => handleDeleteAssessment(row._id)} className="h-4 w-4 text-red-600 cursor-pointer" />
                         </TooltipTrigger>
                         <TooltipContent>Delete</TooltipContent>
                     </Tooltip>
@@ -80,7 +76,7 @@ const AssessmentManager = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Assessment Management</h1>
-                <Button className="bg-green-600 hover:bg-green-800">
+                <Button className="bg-green-600 hover:bg-green-800" onClick={() => setAddDialogOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Assessment
                 </Button>
@@ -91,10 +87,11 @@ const AssessmentManager = () => {
                 columns={columns}
                 searchable={true}
                 searchField="title"
-                isLoading={isLoadingAssessments}
+                isLoading={isLoading}
             />
 
-            <Dialog open={viewAssessmentOpen} onOpenChange={setViewAssessmentOpen}>
+            {/* View Dialog */}
+            <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>{selectedAssessment?.title}</DialogTitle>
@@ -105,7 +102,7 @@ const AssessmentManager = () => {
 
                     <div className="space-y-4 mt-4">
                         {selectedAssessment?.questions?.map((q, index) => (
-                            <div key={q._id} className="border p-4 rounded-md shadow-sm">
+                            <div key={index} className="border p-4 rounded-md shadow-sm">
                                 <h4 className="font-semibold">{index + 1}. {q.question}</h4>
                                 <ul className="list-disc list-inside mt-1">
                                     {q.options.map((opt, i) => (
@@ -120,7 +117,34 @@ const AssessmentManager = () => {
                     </div>
 
                     <DialogFooter>
-                        <Button onClick={() => setViewAssessmentOpen(false)}>Close</Button>
+                        <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Add Dialog */}
+            <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Add Assessment</DialogTitle>
+                    </DialogHeader>
+
+                    <AssessmentForm
+                        onSubmit={async (formData) => {
+                            console.log("📝 Form Submitted:", formData);
+                            const responce = await createQuestion(formData)
+                            if (responce?.status) {
+                                queryClient.invalidateQueries({ queryKey: ['assessments'] });
+                                toast({ title: 'Success', description: 'Question added successfully' });
+                                setAddDialogOpen(false);
+                            }
+                        }}
+                    />
+
+                    <DialogFooter className="pt-2">
+                        <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
+                            Cancel
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
