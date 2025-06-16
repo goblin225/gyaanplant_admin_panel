@@ -276,7 +276,7 @@ const UserManagement = () => {
                                                 </FormControl>
                                                 <SelectContent>
                                                     {roleResponce?.data?.map((e) => (
-                                                        <SelectItem value={e?.name}>{e?.name}</SelectItem>
+                                                        <SelectItem value={e?._id}>{e?.name}</SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>

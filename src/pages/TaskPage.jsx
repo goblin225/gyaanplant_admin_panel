@@ -324,8 +324,8 @@ const Tasks = () => {
                 <div className="flex flex-wrap gap-1">
                     {row?.assignedTo?.map(user => (
                         <span
-                            key={user._id}
-                            className="text-xs px-2 py-1 bg-gray-200 rounded-md"
+                            key={user?._id}
+                            className="text-xs px-2 py-1 bg-blue-400 text-white rounded-md"
                         >
                             {user?.name}
                         </span>
@@ -584,6 +584,55 @@ const Tasks = () => {
                                         </FormItem>
                                     )}
                                 />
+
+                                <FormField control={form.control} name="repeatType" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Repeat Mode *</FormLabel>
+                                        <Select
+                                            value={{ label: field.value, value: field.value }}
+                                            onChange={(val) => field.onChange(val.value)}
+                                            options={[
+                                                { label: 'Single Day', value: 'Once' },
+                                                { label: 'Daily', value: 'Daily' },
+                                                { label: 'Custom Days (MWF)', value: 'Custom' },
+                                                { label: 'Weekly', value: 'Weekly' },
+                                                { label: 'Per Day Per User', value: 'PerDayPerUser' }
+                                            ]}
+                                            placeholder="Select Repeat Mode"
+                                        />
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+
+                                <FormField control={form.control} name="startDate" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Start Date *</FormLabel>
+                                        <FormControl><Input {...field} type="date" required /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+
+                                <FormField control={form.control} name="endDate" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>End Date *</FormLabel>
+                                        <FormControl><Input {...field} type="date" required /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+
+                                <FormField control={form.control} name="repeatDays" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Repeat Days (Custom Mode)</FormLabel>
+                                        <Select
+                                            isMulti
+                                            value={(field.value || []).map(val => ({ label: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][val], value: val }))}
+                                            onChange={(selected) => field.onChange(selected.map(item => item.value))}
+                                            options={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((label, i) => ({ label, value: i }))}
+                                            placeholder="Select Days"
+                                        />
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
                             </div>
 
                             {/* Steps Section */}
