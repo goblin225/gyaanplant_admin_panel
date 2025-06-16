@@ -52,7 +52,7 @@ const UserManagement = () => {
         defaultValues: {
             name: '',
             email: '',
-            role: '',
+            roleId: '',
             phoneNumber: '',
             password: '',
             profile_pic: '',
@@ -75,12 +75,11 @@ const UserManagement = () => {
             const payload = {
                 name: data.name,
                 email: data.email,
-                role: data.role,
+                roleId: data.roleId,
                 phoneNumber: data.phoneNumber,
                 password: data.password,
                 profile_pic: profilePicUrl,
             };
-
             const response = editing
                 ? await updateUser(editing._id, payload)
                 : await addUser(payload);
@@ -176,7 +175,7 @@ const UserManagement = () => {
                             form.reset({
                                 name: row.name,
                                 email: row.email,
-                                role: row.role,
+                                roleId: row.roleId,
                                 phoneNumber: row.phoneNumber,
                                 password: '',
                                 profilePic: '',
@@ -264,7 +263,7 @@ const UserManagement = () => {
 
                                 <FormField
                                     control={form.control}
-                                    name="role"
+                                    name="roleId"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Role</FormLabel>
