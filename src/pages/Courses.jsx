@@ -170,10 +170,6 @@ const Courses = () => {
                         description: response.data.message,
                     });
                 }
-                toast({
-                    title: 'Update not implemented',
-                    description: 'Update functionality needs to be implemented',
-                });
                 return;
             } else {
                 response = await createCourse(courseData);
