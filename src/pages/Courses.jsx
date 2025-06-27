@@ -164,26 +164,21 @@ const Courses = () => {
             let response;
             if (isEditing && selectedCourse) {
                 response = await editCourse(selectedCourse._id, courseData);
-                if (response.statusCode === 400) {
-                    toast({
-                        title: 'Something went wrong',
-                        description: response.data.message,
-                    });
-                }
-                return;
             } else {
                 response = await createCourse(courseData);
             }
 
+            // Handle 400 errors
             if (response.statusCode === 400) {
                 toast({
                     title: 'Something went wrong',
-                    description: response.data.message || 'Failed to process course',
+                    description: response.data?.message || 'Failed to process course',
                     variant: 'destructive'
                 });
                 return;
             }
 
+            // Handle success
             if (response.status === 200 || response.statusCode === 200) {
                 toast({
                     title: isEditing ? 'Course Updated' : 'Course Added',
