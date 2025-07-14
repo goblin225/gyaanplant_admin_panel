@@ -9,7 +9,7 @@ export const sendOTP = async (credentials) => {
 };
 
 export const adminLogin = async (credentials) => {
-  const response = await api.post('/auth/admin-login', credentials);
+  const response = await api.post('/auth/login', credentials);
   const data = response.data.data;
 
   return {
