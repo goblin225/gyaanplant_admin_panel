@@ -8,3 +8,8 @@ export const getAllQuestions = async () => {
     const res = await api.get('/assessment/get-questions');
     return res.data;
 };
+
+export const deleteAssessment = async (assessmentId) => {
+    const res = await api.delete(`/assessment/delete-assessment/${assessmentId}`);
+    return res.data;
+};

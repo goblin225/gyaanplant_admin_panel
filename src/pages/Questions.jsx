@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { createQuestion, getAllQuestions } from '../services/assessment';
+import { createQuestion, deleteAssessment, getAllQuestions } from '../services/assessment';
 import AssessmentForm from '../components/common/AssessmentForm';
 
 const AssessmentManager = () => {
@@ -19,6 +19,9 @@ const AssessmentManager = () => {
     const [selectedAssessment, setSelectedAssessment] = useState(null);
     const [viewDialogOpen, setViewDialogOpen] = useState(false);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [assessmentToDelete, setAssessmentToDelete] = useState(null);
+
 
     const { data: assessmentResponse = { data: [] }, isLoading } = useQuery({
         queryKey: ['assessments'],
@@ -32,9 +35,23 @@ const AssessmentManager = () => {
         setViewDialogOpen(true);
     };
 
-    const handleDeleteAssessment = (id) => {
-        console.log('Delete assessment:', id);
-        // Add delete logic
+    const handleDeleteAssessment = (assessment) => {
+        setAssessmentToDelete(assessment);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!assessmentToDelete?._id) return;
+        const response = await deleteAssessment(assessmentToDelete._id);
+        if (response?.statusCode === 200) {
+            queryClient.invalidateQueries({ queryKey: ['assessments'] });
+            toast({ title: 'Deleted', description: 'Assessment deleted successfully' });
+        } else {
+            toast({ title: 'Error', description: 'Failed to delete assessment' });
+        }
+
+        setDeleteDialogOpen(false);
+        setAssessmentToDelete(null);
     };
 
     const columns = [
@@ -63,7 +80,7 @@ const AssessmentManager = () => {
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger>
-                            <Trash onClick={() => handleDeleteAssessment(row._id)} className="h-4 w-4 text-red-600 cursor-pointer" />
+                            <Trash onClick={() => handleDeleteAssessment(row)} className="h-4 w-4 text-red-600 cursor-pointer" />
                         </TooltipTrigger>
                         <TooltipContent>Delete</TooltipContent>
                     </Tooltip>
@@ -102,15 +119,50 @@ const AssessmentManager = () => {
 
                     <div className="space-y-4 mt-4">
                         {selectedAssessment?.questions?.map((q, index) => (
-                            <div key={index} className="border p-4 rounded-md shadow-sm">
+                            <div key={index} className="border p-4 rounded-md shadow-sm space-y-2">
                                 <h4 className="font-semibold">{index + 1}. {q.question}</h4>
-                                <ul className="list-disc list-inside mt-1">
-                                    {q.options.map((opt, i) => (
-                                        <li key={i} className={opt === q.correctAnswer ? 'text-green-600 font-medium' : ''}>
-                                            {opt}
-                                        </li>
-                                    ))}
-                                </ul>
+
+                                {q.type === 'mcq' && (
+                                    <ul className="list-disc list-inside mt-1">
+                                        {q.options.map((opt, i) => (
+                                            <li
+                                                key={i}
+                                                className={opt === q.correctAnswer ? 'text-green-600 font-medium' : ''}
+                                            >
+                                                {opt}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+
+                                {q.type === 'code' && (
+                                    <div className="space-y-2 mt-2">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-700">Language:</p>
+                                            <p className="bg-gray-100 p-2 rounded text-sm">{q.language}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-700">Code Template:</p>
+                                            <pre className="bg-gray-100 p-3 rounded text-sm whitespace-pre-wrap">{q.codeTemplate}</pre>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-700">Expected Output:</p>
+                                            <pre className="bg-gray-100 p-2 rounded text-sm whitespace-pre-wrap">{q.expectedOutput}</pre>
+                                        </div>
+                                        {q.testCases?.length > 0 && (
+                                            <div className="space-y-2">
+                                                <p className="text-sm font-medium text-gray-700">Test Cases:</p>
+                                                {q.testCases.map((tc, i) => (
+                                                    <div key={i} className="bg-gray-50 p-2 rounded text-sm border">
+                                                        <p><span className="font-medium">Input:</span> {tc.input || '-'}</p>
+                                                        <p><span className="font-medium">Output:</span> {tc.output}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 <p className="text-sm text-gray-500 mt-2">Marks: {q.marks}</p>
                             </div>
                         ))}
@@ -131,7 +183,6 @@ const AssessmentManager = () => {
 
                     <AssessmentForm
                         onSubmit={async (formData) => {
-                            console.log("📝 Form Submitted:", formData);
                             const responce = await createQuestion(formData)
                             if (responce?.status) {
                                 queryClient.invalidateQueries({ queryKey: ['assessments'] });
@@ -148,6 +199,28 @@ const AssessmentManager = () => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Delete Dialog */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Delete Confirmation</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete the assessment "<strong>{assessmentToDelete?.title}</strong>"?
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter className="pt-4">
+                        <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleConfirmDelete}>
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
         </div>
     );
 };
